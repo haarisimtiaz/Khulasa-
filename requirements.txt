@@ -4,3 +4,5 @@ requests
 python-dotenv
 python-dateutil
 google-genai
+gunicorn
+psycopg2-binary
