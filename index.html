@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1 class="wordmark">Khulasa</h1>
+    <p class="tagline">Pakistani news, in a minute</p>
+    <form class="search-form" method="get" action="{{ url_for('index') }}">
+      <input type="hidden" name="scope" value="{{ active_scope }}">
+      <input type="text" name="q" class="search-input" placeholder="Search articles..." value="{{ search_query }}">
+      <button type="submit" class="search-button">Search</button>
+      {% if search_query %}
+      <a href="{{ url_for('index', scope=active_scope) }}" class="search-clear">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+</header>
+
+<nav class="scope-tabs">
+  <div class="scope-tabs-inner">
+    <a href="{{ url_for('index', scope='pakistan') }}"
+       class="scope-tab {{ 'active' if active_scope == 'pakistan' else '' }}">Pakistan</a>
+    <a href="{{ url_for('index', scope='world') }}"
+       class="scope-tab {{ 'active' if active_scope == 'world' else '' }}">World</a>
+  </div>
+</nav>
+
+<nav class="category-tabs">
+  <div class="category-tabs-inner">
+    <a href="{{ url_for('index', scope=active_scope) }}"
+       class="tab {{ 'active' if active_category == 'all' else '' }}">All</a>
+    {% for cat in categories %}
+    <a href="{{ url_for('index', scope=active_scope, category=cat) }}"
+       class="tab {{ 'active' if active_category == cat else '' }}">{{ cat|capitalize }}</a>
+    {% endfor %}
+  </div>
+</nav>
+
+<main class="content">
+  {% if not lead and not articles %}
+  <div class="empty-state">
+    {% if search_query %}
+    <p>No articles matched "{{ search_query }}".</p>
+    <p class="empty-state-detail"><a href="{{ url_for('index', scope=active_scope) }}">Clear search</a> to see all articles.</p>
+    {% else %}
+    <p>No articles yet.</p>
+    <p class="empty-state-detail">Run <code>python ingest.py</code> to pull the first batch of Pakistani news.</p>
+    {% endif %}
+  </div>
+  {% else %}
+
+  {% if lead %}
+  <article class="lead-story">
+    {% if lead.image %}
+    <div class="lead-story-image">
+      <img src="{{ lead.image }}" alt="" loading="lazy">
+    </div>
+    {% endif %}
+    <div class="lead-story-body">
+      <p class="story-source">{{ lead.source }} <span class="story-time">· {{ lead.published_at | timeago }}</span></p>
+      <h2 class="story-headline"><a href="{{ lead.url }}" target="_blank" rel="noopener">{{ lead.title }}</a></h2>
+      {% if lead.summary %}
+      <p class="story-summary">{{ lead.summary }}</p>
+      {% endif %}
+      <a class="story-link" href="{{ lead.url }}" target="_blank" rel="noopener">Continue reading on {{ lead.source }}</a>
+    </div>
+  </article>
+  {% endif %}
+
+  <div class="story-grid">
+    {% for a in articles %}
+    <article class="story-card">
+      {% if a.image %}
+      <div class="story-card-image">
+        <img src="{{ a.image }}" alt="" loading="lazy">
+      </div>
+      {% endif %}
+      <p class="story-source">{{ a.source }} <span class="story-time">· {{ a.published_at | timeago }}</span></p>
+      <h3 class="story-headline story-headline-sm"><a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.title }}</a></h3>
+      {% if a.summary %}
+      <p class="story-summary story-summary-sm">{{ a.summary }}</p>
+      {% endif %}
+      <a class="story-link" href="{{ a.url }}" target="_blank" rel="noopener">Continue reading on {{ a.source }}</a>
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</main>
+
+<footer class="site-footer">
+  <p>Summaries are generated automatically and may not capture every detail. Full stories link back to the original publisher.</p>
+</footer>
+{% endblock %}
